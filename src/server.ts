@@ -1,11 +1,10 @@
-import Fastify from 'fastify'
 
-const app = Fastify()
+import { app } from './app.js'
 
-app.get('/', async () => {
-  return { hello: 'world' }
-})
-
-app.listen({ port: 3333 }).then(() => {
-  console.log('🚀 Server running')
-})
+app
+  .listen({
+    port: 3333,
+  })
+  .then(() => {
+    console.log('HTTP Server Running!')
+  })
