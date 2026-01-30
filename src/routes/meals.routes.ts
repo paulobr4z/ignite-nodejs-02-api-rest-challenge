@@ -1,24 +1,15 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-
-interface IMeals {
-  id: string;
-  userId: string;
-  name: string;
-  description: string;
-  date: string;
-  isOnDiet: boolean;
-  createdAt: string;
-}
-
-const meals: IMeals[] = []
+import { db } from '../database.js'
 
 export async function mealsRoutes(app: FastifyInstance) {
-  app.get('/', () => {
+  app.get('/', async () => {
+    const meals = await db('meals').select('*')
+
     return { meals }
   })
 
-  app.post('/', (request, reply) => {
+  app.post('/', async (request, reply) => {
     const createMealBodySchema = z.object({
       userId: z.string(),
       name: z.string(),
@@ -29,17 +20,13 @@ export async function mealsRoutes(app: FastifyInstance) {
     const { userId, name, description, isOnDiet } =
       createMealBodySchema.parse(request.body)
 
-    const newMeal = {
+    await db('meals').insert({
       id: crypto.randomUUID(),
-      userId,
+      user_id: userId,
       name,
       description,
-      date: Date(),
-      isOnDiet,
-      createdAt: Date(),
-    }
-
-    meals.push(newMeal)
+      is_on_diet: isOnDiet,
+    })
 
     return reply.status(201).send()
   })
