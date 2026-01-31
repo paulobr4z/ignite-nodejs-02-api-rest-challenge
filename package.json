@@ -12,9 +12,8 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@rocketseat/eslint-config": "^3.0.1",
+    "@biomejs/biome": "2.3.13",
     "@types/node": "^25.0.10",
-    "eslint": "^9.39.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

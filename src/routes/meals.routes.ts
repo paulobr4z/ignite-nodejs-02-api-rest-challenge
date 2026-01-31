@@ -5,8 +5,6 @@ import { checkSessionIdExists } from "../middlewares/check-session-id-exists.js"
 
 export async function mealsRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: [checkSessionIdExists] }, async (request) => {
-    const { sessionId } = request.cookies;
-
     const meals = await db("meals").where("user_id", request.user.id).select();
 
     return { meals };
