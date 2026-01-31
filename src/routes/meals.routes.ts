@@ -37,4 +37,47 @@ export async function mealsRoutes(app: FastifyInstance) {
       return reply.status(201).send();
     },
   );
+
+  app.put(
+    "/:id",
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const updateMealParamsSchema = z.object({
+        id: z.uuid(),
+      });
+
+      const updateMealBodySchema = z.object({
+        name: z.string(),
+        description: z.string(),
+        isOnDiet: z.boolean(),
+        date: z.coerce.date(),
+      });
+
+      const { id } = updateMealParamsSchema.parse(request.params);
+
+      const { name, description, isOnDiet, date } = updateMealBodySchema.parse(
+        request.body,
+      );
+
+      const meal = await db("meals")
+        .where({
+          id,
+          user_id: request.user.id,
+        })
+        .first();
+
+      if (!meal) {
+        return reply.status(404).send({ message: "Meal not found." });
+      }
+
+      await db("meals").where({ id }).update({
+        name,
+        description,
+        is_on_diet: isOnDiet,
+        date,
+      });
+
+      return reply.status(200).send();
+    },
+  );
 }
