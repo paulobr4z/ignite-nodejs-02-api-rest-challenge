@@ -80,4 +80,79 @@ export async function mealsRoutes(app: FastifyInstance) {
       return reply.status(200).send();
     },
   );
+
+  app.delete(
+    "/:id",
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const deleteMealParamsSchema = z.object({
+        id: z.uuid(),
+      });
+
+      const { id } = deleteMealParamsSchema.parse(request.params);
+
+      const meal = await db("meals")
+        .where({
+          id,
+          user_id: request.user.id,
+        })
+        .first();
+
+      if (!meal) {
+        return reply.status(404).send({ message: "Meal not found." });
+      }
+
+      await db("meals").where({ id }).delete();
+
+      return reply.status(204).send();
+    },
+  );
+
+  app.get("/:id", { preHandler: [checkSessionIdExists] }, async (request) => {
+    const getMealParamsSchema = z.object({
+      id: z.uuid(),
+    });
+
+    const { id } = getMealParamsSchema.parse(request.params);
+
+    const meal = await db("meals")
+      .where({
+        id,
+        user_id: request.user.id,
+      })
+      .first();
+
+    return meal;
+  });
+
+  app.get(
+    "/metrics",
+    { preHandler: [checkSessionIdExists] },
+    async (request) => {
+      const user_id = request.user.id;
+
+      const meals = await db("meals")
+        .where("user_id", user_id)
+        .orderBy("date", "asc");
+
+      let bestOnDietSequence = 0;
+      let currentSequence = 0;
+
+      for (const meal of meals) {
+        if (meal.is_on_diet) {
+          currentSequence++;
+          bestOnDietSequence = Math.max(bestOnDietSequence, currentSequence);
+        } else {
+          currentSequence = 0;
+        }
+      }
+
+      return {
+        totalMeals: meals.length,
+        mealsOnDiet: meals.filter((meal) => meal.is_on_diet).length,
+        mealsOffDiet: meals.filter((meal) => !meal.is_on_diet).length,
+        bestOnDietSequence,
+      };
+    },
+  );
 }
