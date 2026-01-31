@@ -1,10 +1,13 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { db } from '../database.js'
+import { checkSessionIdExists } from '../middlewares/check-session-id-exists.js'
 
 export async function mealsRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const meals = await db('meals').select('*')
+  app.get('/', { preHandler: [checkSessionIdExists] }, async (request) => {
+    const { sessionId } = request.cookies
+
+    const meals = await db('users').where('session_id', sessionId).select()
 
     return { meals }
   })
