@@ -11,7 +11,7 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete('CASCADE')
     table.text('name').notNullable()
     table.text('description').notNullable()
-    table.timestamp('date').defaultTo(knex.fn.now()).notNullable()
+    table.timestamp('date').notNullable()
     table.boolean('is_on_diet').notNullable()
   })
 }
